@@ -573,6 +573,8 @@ pub enum Directions {
     TopRight = 32,
     BottomLeft = 64,
     BottomRight = 128,
+    TLBR = Directions::TopLeft as u8 | Directions::BottomRight as u8,
+    TRBL = Directions::TopRight as u8 | Directions::BottomLeft as u8,
     TopAll = Directions::TopLeft as u8 | Directions::Top as u8 | Directions::TopRight as u8,
     BottomAll = Directions::BottomLeft as u8 | Directions::Bottom as u8 | Directions::BottomRight as u8,
     LeftAll = Directions::TopLeft as u8 | Directions::Left as u8 | Directions::BottomLeft as u8,
@@ -672,7 +674,14 @@ impl<T> Grid<T> where T: Clone {
 
     pub fn get_points_in_direction(&self, p: &Point, direction: Directions) -> Vec<Point> {
         match direction {
-            Directions::Top | Directions::Right | Directions::Bottom | Directions::Left => {
+            Directions::Top |
+            Directions::Right |
+            Directions::Bottom |
+            Directions::Left |
+            Directions::TopRight |
+            Directions::TopLeft |
+            Directions::BottomRight |
+            Directions::BottomLeft => {
                 let mut points = vec![];
                 let mut current = p.clone();
                 loop {

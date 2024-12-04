@@ -7,6 +7,7 @@ pub trait CollectionExtension<T> {
     fn except(&self, item: &T) -> Self;
     fn append_item(&self, item: &T) -> Self;
     fn push_all(&mut self, other: &Self);
+    fn map<U, F>(&self, mapper: F) -> Vec<U> where F: Fn(&T) -> U;
 }
 
 impl<T> CollectionExtension<T> for Vec<T> where T: Clone + Eq {
@@ -34,6 +35,11 @@ impl<T> CollectionExtension<T> for Vec<T> where T: Clone + Eq {
         for value in other {
             self.push(value.clone());
         }
+    }
+
+    fn map<U, F>(&self, mapper: F) -> Vec<U>
+        where F: Fn(&T) -> U {
+        self.iter().map(mapper).collect()
     }
 }
 

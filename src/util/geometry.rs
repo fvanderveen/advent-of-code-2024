@@ -35,7 +35,7 @@ impl Point {
         abs(self.x - other.x) + abs(self.y - other.y)
     }
 
-    pub fn translate_in_direction(&self, directions: Directions, amount: usize) -> Self {
+    pub fn translate_in_direction(&self, directions: &Directions, amount: usize) -> Self {
         match directions {
             Directions::Top => *self - (0isize, amount as isize),
             Directions::Left => *self - (amount as isize, 0isize),

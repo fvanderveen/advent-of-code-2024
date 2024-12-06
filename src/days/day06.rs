@@ -33,6 +33,12 @@ enum Tile {
 
 type Map = Grid<Tile>;
 
+#[derive(Eq, PartialEq, Copy, Clone, Hash)]
+struct Trace {
+    point: Point,
+    direction: Directions,
+}
+
 impl Map {
     fn next_direction(guard_direction: &Directions) -> Directions {
         match guard_direction {
@@ -55,12 +61,13 @@ impl Map {
         let mut guard_position = guard_tile.unwrap().0;
         let mut guard_direction = Directions::Top;
 
+        // We might divert from the previously known path and end up in a random other loop
         let mut seen_tiles: HashSet<Point> = HashSet::new();
 
         loop {
             seen_tiles.insert(guard_position);
 
-            let next_pos = guard_position.translate_in_direction(guard_direction, 1);
+            let next_pos = guard_position.translate_in_direction(&guard_direction, 1);
             let next_tile = self.get(&next_pos);
 
             match next_tile {
@@ -78,23 +85,26 @@ impl Map {
     }
 
     fn check_loop(map: &Self, from: &Point, direction: &Directions) -> bool {
-        // XXX: Takes to long to force. We might want to keep a history of guard positions & direction, that way we can more quickly determine
-        //  _when_ we hit a loop (as we've already seen the guard going that way, i.e. we're back on an already traversed path.
-
         // To check a loop, we assume an obstacle was put in front of the guard (located at 'from' and moving in 'direction').
         // We let the guard walk until:
         // - It goes off the map (fail)
-        // - It takes a fourth turn (fail)
-        // - It ends up at the same spot after 3 turns (success)
-        let mut turns = 0;
+        // - It ends up at a spot (in the same direction) he's been before (success)
         let mut guard_position = *from;
         let mut guard_direction = Self::next_direction(direction);
 
-        loop {
-            if guard_position.eq(from) && guard_direction.eq(&direction) { return true; } // We ended up back at the start after 3 turns!
+        let mut blocked_map = map.clone();
+        blocked_map.set(guard_position.translate_in_direction(direction, 1), Tile::Blocked);
 
-            let next_pos = guard_position.translate_in_direction(guard_direction, 1);
-            let next_tile = map.get(&next_pos);
+        let mut loop_trace: HashSet<Trace> = HashSet::new();
+
+        loop {
+            let step_trace = Trace { point: guard_position, direction: guard_direction };
+            if loop_trace.contains(&step_trace) { return true; } // we've been here before, so we're walking in a loop
+
+            loop_trace.insert(step_trace);
+
+            let next_pos = guard_position.translate_in_direction(&guard_direction, 1);
+            let next_tile = blocked_map.get(&next_pos);
 
             match next_tile {
                 None => { return false; } // Out of bounds, no loop
@@ -103,7 +113,6 @@ impl Map {
                 }
                 Some(Tile::Blocked) => {
                     guard_direction = Self::next_direction(&guard_direction);
-                    turns = turns + 1;
                 }
             }
         }
@@ -121,17 +130,20 @@ impl Map {
         let mut guard_position = guard_tile.unwrap().0;
         let mut guard_direction = Directions::Top;
 
+        let mut seen_tiles: HashSet<Point> = HashSet::new();
         let mut obstuctions: HashSet<Point> = HashSet::new();
 
         loop {
-            let next_pos = guard_position.translate_in_direction(guard_direction, 1);
+            seen_tiles.insert(guard_position);
+
+            let next_pos = guard_position.translate_in_direction(&guard_direction, 1);
             let next_tile = self.get(&next_pos);
 
             match next_tile {
                 None => { break; } // Out of bounds, we're done.
                 Some(Tile::Empty) | Some(Tile::Guard) => {
                     // If we _could_ insert an obstacle here, test it:
-                    if Self::check_loop(self, &guard_position, &guard_direction) {
+                    if !seen_tiles.contains(&next_pos) && !obstuctions.contains(&next_pos) && Self::check_loop(self, &guard_position, &guard_direction) {
                         obstuctions.insert(next_pos);
                     }
 

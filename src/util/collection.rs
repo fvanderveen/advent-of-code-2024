@@ -5,6 +5,7 @@ pub trait CollectionExtension<T> {
     fn deduplicate(&self) -> Self;
     fn union(&self, other: &Self) -> Self;
     fn except(&self, item: &T) -> Self;
+    fn prepend_item(&self, item: &T) -> Self;
     fn append_item(&self, item: &T) -> Self;
     fn push_all(&mut self, other: &Self);
     fn map<U, F>(&self, mapper: F) -> Vec<U> where F: Fn(&T) -> U;
@@ -25,6 +26,10 @@ impl<T> CollectionExtension<T> for Vec<T> where T: Clone + Eq {
 
     fn except(&self, item: &T) -> Self {
         self.iter().cloned().filter(|v| v.ne(item)).collect()
+    }
+
+    fn prepend_item(&self, item: &T) -> Self {
+        vec![item.clone()].into_iter().chain(self.clone()).collect()
     }
 
     fn append_item(&self, item: &T) -> Self {

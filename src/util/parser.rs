@@ -14,7 +14,7 @@ impl Parser {
     }
 
     fn skip_whitespace(&mut self) {
-        self.position += self.input.chars().skip(self.position).take_while(|c| c.is_whitespace()).count()
+        self.position += self.input[self.position..].chars().take_while(|c| c.is_whitespace()).count()
     }
 
     pub fn literal(&mut self, literal: &str) -> Result<(), String> {
@@ -70,6 +70,18 @@ impl Parser {
         };
 
         Ok(modifier * (self.usize()?) as isize)
+    }
+
+    pub fn digit(&mut self) -> Result<usize, String> {
+        self.skip_whitespace();
+
+        let result = match self.input.chars().nth(self.position) {
+            Some(value) if value.is_numeric() => parse_usize(value.to_string().as_str())?,
+            _ => return Err(format!("Expected digit, found '{}'", self.input))
+        };
+
+        self.position += 1;
+        Ok(result)
     }
 
     pub fn str(&mut self, len: usize) -> Result<String, String> {

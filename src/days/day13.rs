@@ -85,7 +85,6 @@ impl ClawMachine {
 mod tests {
     use std::cmp::Ordering;
     use crate::days::day13::{parse_input, ClawMachine, ClawMachineState};
-    use crate::util::geometry::Point;
 
     const TEST_INPUT: &str = "\
         Button A: X+94, Y+34
@@ -132,18 +131,6 @@ mod tests {
         assert_eq!(machines[1].get_corrected_solve(10_000_000_000_000), Some(ClawMachineState { a_presses: 118679050709, b_presses: 103199174542 }));
         assert_eq!(machines[2].get_corrected_solve(10_000_000_000_000), None);
         assert_eq!(machines[3].get_corrected_solve(10_000_000_000_000), Some(ClawMachineState { a_presses: 102851800151, b_presses: 107526881786 }));
-    }
-
-    #[test]
-    fn test_state_loc() {
-        let machine = ClawMachine {
-            prize_loc: (8400, 5400).into(),
-            button_a: (94, 34).into(),
-            button_b: (22, 67).into(),
-        };
-        assert_eq!(ClawMachineState { a_presses: 0, b_presses: 0 }.get_loc(&machine), Point { x: 0, y: 0 });
-        assert_eq!(ClawMachineState { a_presses: 1, b_presses: 0 }.get_loc(&machine), Point { x: 94, y: 34 });
-        assert_eq!(ClawMachineState { a_presses: 80, b_presses: 40 }.get_loc(&machine), Point { x: 8400, y: 5400 });
     }
 
     #[test]

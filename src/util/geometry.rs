@@ -525,10 +525,14 @@ impl Bounds {
     pub fn right(&self) -> isize {
         self.left + self.width as isize - 1
     }
-
     pub fn bottom(&self) -> isize {
         self.top + self.height as isize - 1
     }
+
+    pub fn top_left(&self) -> Point { (self.left, self.top).into() }
+    pub fn top_right(&self) -> Point { (self.right(), self.top).into() }
+    pub fn bottom_left(&self) -> Point { (self.left, self.bottom()).into() }
+    pub fn bottom_right(&self) -> Point { (self.right(), self.bottom()).into() }
 
     pub fn contains(&self, pixel: &Point) -> bool {
         self.x().contains(&pixel.x) && self.y().contains(&pixel.y)
@@ -602,6 +606,11 @@ impl<T> Grid<T> where T: Clone {
         let right = points.iter().map(|p| p.x).max().unwrap_or(0);
 
         let bounds = Bounds::from_tlbr(top, left, bottom, right);
+        Self { bounds, cells }
+    }
+
+    pub fn with_size(bounds: Bounds) -> Self where T: Default {
+        let cells = HashMap::from_iter(bounds.points().into_iter().map(|p| (p, T::default())));
         Self { bounds, cells }
     }
 

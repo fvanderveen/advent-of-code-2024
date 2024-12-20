@@ -35,6 +35,14 @@ impl Point {
         abs(self.x - other.x) + abs(self.y - other.y)
     }
 
+    pub fn get_points_within_manhattan_distance(&self, distance: usize) -> Vec<Point> {
+        let idistance = distance as isize;
+        let rx = (self.x - idistance)..=(self.x + idistance);
+        let ry = (self.y - idistance)..=(self.y + idistance);
+
+        ry.flat_map(|y| rx.clone().map(move |x| (x, y).into())).filter(|p| self.manhattan_distance(p) <= idistance).collect()
+    }
+
     pub fn translate_in_direction(&self, directions: &Directions, amount: usize) -> Self {
         match directions {
             Directions::Top => *self - (0isize, amount as isize),
@@ -214,6 +222,20 @@ mod point_tests {
         let point_b = Point { x: 13, y: 4 };
         assert_eq!(point_a.manhattan_distance(&point_b), 14);
         assert_eq!(point_b.manhattan_distance(&point_a), 14);
+    }
+
+    #[test]
+    fn test_get_points_within_manhattan_distance() {
+        let point = Point { x: 10, y: 10 };
+        let result = point.get_points_within_manhattan_distance(2);
+
+        assert_eq!(result, vec![
+            Point { x: 10, y: 8 },
+            Point { x: 9, y: 9 }, Point { x: 10, y: 9 }, Point { x: 11, y: 9 },
+            Point { x: 8, y: 10 }, Point { x: 9, y: 10 }, Point { x: 10, y: 10 }, Point { x: 11, y: 10 }, Point { x: 12, y: 10 },
+            Point { x: 9, y: 11 }, Point { x: 10, y: 11 }, Point { x: 11, y: 11 },
+            Point { x: 10, y: 12 },
+        ])
     }
 }
 
